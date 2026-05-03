@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>91 Club Panel - Real-time Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS resets and variables */
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #a29bfe;
+            --bg-gradient-1: #0f172a;
+            --bg-gradient-2: #1e1b4b;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --high-profit: #10b981;
+            --medium-profit: #f59e0b;
+            --low-profit: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2));
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Animated background shapes */
+        .shape {
+            position: absolute;
+            filter: blur(100px);
+            z-index: -1;
+            animation: float 12s infinite alternate ease-in-out;
+        }
+        .shape-1 {
+            top: -5%; left: -5%;
+            width: 50vw; height: 50vw;
+            max-width: 600px; max-height: 600px;
+            background: rgba(108, 92, 231, 0.4);
+            border-radius: 50%;
+        }
+        .shape-2 {
+            bottom: -5%; right: -5%;
+            width: 40vw; height: 40vw;
+            max-width: 500px; max-height: 500px;
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 50%;
+            animation-delay: -6s;
+            animation-duration: 15s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.05); }
+            100% { transform: translate(-20px, 50px) scale(0.95); }
+        }
+
+        /* Glassmorphism Container */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            display: block;
+        }
+
+        #login-screen h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            background: linear-gradient(to right, #a29bfe, #48dbfb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #login-screen p {
+            color: var(--text-muted);
+            margin-bottom: 35px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), #4834d4);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(108, 92, 231, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Dashboard Screen */
+        #dashboard-screen {
+            display: none;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #fff, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--low-profit);
+            border-color: var(--low-profit);
+        }
+
+        .server-btn {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--medium-profit);
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .server-btn:hover {
+            background: rgba(245, 158, 11, 0.2);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .reboot-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--high-profit);
+            padding: 8px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .reboot-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .header-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        #reboot-screen {
+            display: none;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        #reboot-screen h2 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            font-weight: 800;
+            background: linear-gradient(to right, #48dbfb, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .reboot-progress-wrapper {
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .reboot-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 10px;
+            transition: width 1s linear;
+        }
+
+        #reboot-status {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        #reboot-completed-msg {
+            display: none;
+            color: var(--high-profit);
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: bounceIn 0.5s forwards;
+        }
+
+        .number-display-wrapper {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 15px 35px rgba(0,0,0,0.4);
+            border: 2px solid var(--glass-border);
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: transparent;
+            stroke: var(--primary);
+            stroke-width: 8;
+            stroke-dasharray: 653; /* 2 * pi * r (r=104) */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+        }
+
+        .number {
+            font-size: 7rem;
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(255,255,255,0.4);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            line-height: 1;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            70% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+
+        .label-badge {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 35px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation-delay: 0.2s;
+        }
+
+        @keyframes slideUp {
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .high-profit { background: rgba(16, 185, 129, 0.15); color: var(--high-profit); border: 1px solid rgba(16, 185, 129, 0.5); text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        .medium-profit { background: rgba(245, 158, 11, 0.15); color: var(--medium-profit); border: 1px solid rgba(245, 158, 11, 0.5); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .low-profit { background: rgba(239, 68, 68, 0.15); color: var(--low-profit); border: 1px solid rgba(239, 68, 68, 0.5); text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+        .history-section {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 22px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .history-section h3 {
+            font-size: 1.05rem;
+            color: var(--text-main);
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        
+        .timer-badge {
+            background: rgba(108, 92, 231, 0.2);
+            color: var(--secondary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            border: 1px solid rgba(108, 92, 231, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(162, 155, 254, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(162, 155, 254, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(162, 155, 254, 0); }
+        }
+
+        .history-list {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+            min-height: 55px;
+            align-items: center;
+        }
+
+        .history-item {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid;
+            opacity: 0;
+            transform: scale(0.8);
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .history-item::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-25deg);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            100% { left: 200%; }
+        }
+
+        @keyframes bounceIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .empty-history {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <!-- Login Screen -->
+    <div class="glass-panel" id="login-screen">
+        <h1>91 Club Panel</h1>
+        <p>Login to access real-time predictions</p>
+        
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <div id="login-error" style="color: var(--low-profit); font-size: 0.9rem; display: none; margin-bottom: 10px; text-align: left;">Please enter both username and password.</div>
+            <button type="submit" class="btn">Access Dashboard</button>
+        </form>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div class="glass-panel" id="dashboard-screen">
+        <div class="header">
+            <h2 id="user-greeting">Welcome!</h2>
+            <div class="header-buttons">
+                <button class="reboot-btn" id="reboot-btn">Reboot</button>
+                <button class="logout-btn" id="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <div class="number-display-wrapper">
+            <svg class="progress-ring" viewBox="0 0 220 220">
+                <circle cx="110" cy="110" r="104"></circle>
+            </svg>
+            <div class="number" id="current-number">-</div>
+        </div>
+
+        <div class="label-badge" id="profit-label">Awaiting...</div>
+
+        <div class="history-section">
+            <h3>
+                Recent Predictions
+                <div class="timer-badge">
+                    <div class="pulse-dot"></div>
+                    <span id="countdown-timer">60s</span>
+                </div>
+            </h3>
+            <div class="history-list" id="history-list">
+                <!-- History items will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Connect Screen -->
+    <div class="glass-panel" id="server-screen" style="display: none; opacity: 0; transform: scale(0.95); transition: opacity 0.5s ease, transform 0.5s ease;">
+        <h2>Server Connection</h2>
+        
+        <div id="server-auth-section" style="transition: opacity 0.3s ease;">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Enter credentials to connect to main server.</p>
+            <form id="server-form">
+                <div class="input-group">
+                    <label for="server-id">Server ID</label>
+                    <input type="text" id="server-id" placeholder="Enter Server ID" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label for="server-pass">Password</label>
+                    <input type="password" id="server-pass" placeholder="Enter Password" required>
+                </div>
+                <div id="server-error" style="color: var(--low-profit); font-size: 0.9rem; display: none; margin-bottom: 10px; text-align: left;">Invalid ID or Password</div>
+                <button type="submit" class="btn">Connect</button>
+                <button type="button" class="btn" id="server-cancel-btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); margin-top: 10px;">Cancel</button>
+            </form>
+        </div>
+
+        <div id="server-loading-section" style="display: none; transition: opacity 0.3s ease;">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Establishing secure connection... <span id="server-timer">10s</span></p>
+            <div class="reboot-progress-wrapper">
+                <div class="reboot-progress-bar" id="server-progress" style="background: linear-gradient(to right, #f59e0b, #10b981);"></div>
+            </div>
+        </div>
+
+        <div id="server-connected-section" style="display: none; transition: opacity 0.3s ease;">
+            <div style="font-size: 4rem; color: var(--high-profit); margin-bottom: 10px;">✓</div>
+            <h3 style="color: var(--high-profit); font-size: 1.5rem; margin-bottom: 20px;">Connected Successfully</h3>
+            <button class="btn" id="server-return-btn">Return to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- Reboot Screen -->
+    <div class="glass-panel" id="reboot-screen">
+        <h2>System Rebooting</h2>
+        <div class="reboot-progress-wrapper">
+            <div class="reboot-progress-bar" id="reboot-progress"></div>
+        </div>
+        <p id="reboot-status">Initializing reboot... <span id="reboot-timer">3600s</span> remaining</p>
+        <div id="reboot-completed-msg">Reboot completed</div>
+        <button class="btn" id="reboot-continue-btn" style="display: none;">Continue to Dashboard</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userGreeting = document.getElementById('user-greeting');
+        
+        const rebootBtn = document.getElementById('reboot-btn');
+        const rebootScreen = document.getElementById('reboot-screen');
+        const rebootProgress = document.getElementById('reboot-progress');
+        const rebootStatus = document.getElementById('reboot-status');
+        const rebootCompletedMsg = document.getElementById('reboot-completed-msg');
+        const rebootContinueBtn = document.getElementById('reboot-continue-btn');
+
+        const serverScreen = document.getElementById('server-screen');
+        const serverForm = document.getElementById('server-form');
+        const serverCancelBtn = document.getElementById('server-cancel-btn');
+        const serverError = document.getElementById('server-error');
+        const serverAuthSection = document.getElementById('server-auth-section');
+        const serverLoadingSection = document.getElementById('server-loading-section');
+        const serverConnectedSection = document.getElementById('server-connected-section');
+        const serverProgress = document.getElementById('server-progress');
+        const serverTimerEl = document.getElementById('server-timer');
+        const serverReturnBtn = document.getElementById('server-return-btn');
+        let serverConnectInterval;
+
+        const currentNumberEl = document.getElementById('current-number');
+        const profitLabelEl = document.getElementById('profit-label');
+        const historyListEl = document.getElementById('history-list');
+        const progressCircle = document.querySelector('.progress-ring circle');
+        const countdownTimerEl = document.getElementById('countdown-timer');
+
+        // State variables
+        let history = [];
+        let predictionInterval;
+        let countdownInterval;
+        const UPDATE_INTERVAL = 60; // 60 seconds
+
+        // SVG Circle math for countdown animation
+        // Radius is 104, so circumference is 2 * pi * 104 ≈ 653.45
+        const circumference = 104 * 2 * Math.PI;
+        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function getProfitConfig(num) {
+            if (num === 9) {
+                return { label: 'High Profit', class: 'high-profit', color: 'var(--high-profit)' };
+            } else if (num >= 5) {
+                return { label: 'Medium Profit', class: 'medium-profit', color: 'var(--medium-profit)' };
+            } else {
+                return { label: 'Low Profit', class: 'low-profit', color: 'var(--low-profit)' };
+            }
+        }
+
+        function generatePrediction() {
+            // Generate number 0-9
+            const num = Math.floor(Math.random() * 10);
+            const config = getProfitConfig(num);
+
+            // Trigger reflow for animations
+            currentNumberEl.style.animation = 'none';
+            profitLabelEl.style.animation = 'none';
+            void currentNumberEl.offsetWidth; // Trigger reflow
+            void profitLabelEl.offsetWidth;
+
+            // Update UI
+            currentNumberEl.style.fontSize = '';
+            currentNumberEl.style.color = '';
+            currentNumberEl.textContent = num;
+            currentNumberEl.style.animation = 'popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+            profitLabelEl.textContent = config.label;
+            profitLabelEl.className = `label-badge ${config.class}`;
+            profitLabelEl.style.animation = 'slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+            
+            progressCircle.style.stroke = config.color;
+
+            // Update history
+            updateHistory(num, config);
+        }
+
+        function updateHistory(num, config) {
+            // Add to beginning of history
+            history.unshift({ num, config });
+            
+            // Keep only last 3
+            if (history.length > 3) {
+                history.pop();
+            }
+
+            // Render history
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyListEl.innerHTML = '';
+            if (history.length === 0) {
+                historyListEl.innerHTML = '<span class="empty-history">No predictions yet. Waiting...</span>';
+                return;
+            }
+            
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `history-item`;
+                div.style.animationDelay = `${index * 0.1}s`;
+                div.textContent = item.num;
+                div.style.color = item.config.color;
+                div.style.borderColor = item.config.color;
+                div.style.boxShadow = `0 0 10px ${item.config.color.replace(')', ', 0.3)').replace('var(', '').replace(')', '')}`; // Soft glow
+                
+                historyListEl.appendChild(div);
+            });
+        }
+
+        function startTimer() {
+            let timeLeft = UPDATE_INTERVAL;
+            setProgress(100);
+            countdownTimerEl.textContent = `${timeLeft}s`;
+
+            clearInterval(predictionInterval);
+            clearInterval(countdownInterval);
+
+            // Immediate first prediction
+            generatePrediction();
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownTimerEl.textContent = `${timeLeft}s`;
+                
+                // Update progress ring
+                const percent = (timeLeft / UPDATE_INTERVAL) * 100;
+                setProgress(percent);
+
+                if (timeLeft <= 2) {
+                    clearInterval(countdownInterval);
+                    
+                    // Show Server Error
+                    currentNumberEl.style.animation = 'none';
+                    currentNumberEl.textContent = 'ERROR';
+                    currentNumberEl.style.fontSize = '3rem'; 
+                    currentNumberEl.style.color = 'var(--low-profit)';
+                    
+                    profitLabelEl.textContent = 'Server Error - Connection Lost';
+                    profitLabelEl.className = 'label-badge low-profit';
+                    progressCircle.style.stroke = 'var(--low-profit)';
+                    countdownTimerEl.textContent = 'Stopped';
+                }
+            }, 1000);
+        }
+
+        // Event Listeners
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const loginError = document.getElementById('login-error');
+            
+            if (!username || !password) {
+                loginError.textContent = 'Please enter both username and password.';
+                loginError.style.display = 'block';
+                return;
+            }
+            
+            if (username !== 'admin' || password !== '26626635') {
+                loginError.textContent = 'Invalid username or password.';
+                loginError.style.display = 'block';
+                return;
+            }
+            
+            loginError.style.display = 'none';
+            
+            // Clear history on login
+            history = [];
+            renderHistory();
+            
+            // Setup UI
+            userGreeting.textContent = `Hi, ${username}`;
+            loginScreen.style.opacity = '0';
+            loginScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                loginScreen.style.display = 'none';
+                serverScreen.style.display = 'block';
+                
+                serverForm.reset();
+                serverError.style.display = 'none';
+                serverAuthSection.style.display = 'block';
+                serverAuthSection.style.opacity = '1';
+                serverLoadingSection.style.display = 'none';
+                serverConnectedSection.style.display = 'none';
+                
+                void serverScreen.offsetWidth; // Reflow
+                
+                serverScreen.style.opacity = '1';
+                serverScreen.style.transform = 'scale(1)';
+            }, 500);
+        });
+
+
+
+        serverCancelBtn.addEventListener('click', () => {
+            serverScreen.style.opacity = '0';
+            serverScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                serverScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                
+                void loginScreen.offsetWidth;
+                
+                loginScreen.style.opacity = '1';
+                loginScreen.style.transform = 'scale(1)';
+            }, 500);
+        });
+
+        serverForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('server-id').value;
+            const pass = document.getElementById('server-pass').value;
+            
+            if (id === 'connectlog' && pass === '26626635') {
+                serverError.style.display = 'none';
+                
+                serverAuthSection.style.opacity = '0';
+                setTimeout(() => {
+                    serverAuthSection.style.display = 'none';
+                    serverLoadingSection.style.display = 'block';
+                    serverLoadingSection.style.opacity = '0';
+                    
+                    void serverLoadingSection.offsetWidth;
+                    serverLoadingSection.style.opacity = '1';
+                    
+                    const CONNECT_TIME = 10; // 10 seconds
+                    let timeLeft = CONNECT_TIME;
+                    serverProgress.style.width = '0%';
+                    serverTimerEl.textContent = `${timeLeft}s`;
+                    
+                    serverConnectInterval = setInterval(() => {
+                        timeLeft--;
+                        const percent = ((CONNECT_TIME - timeLeft) / CONNECT_TIME) * 100;
+                        serverProgress.style.width = `${percent}%`;
+                        serverTimerEl.textContent = `${timeLeft}s`;
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(serverConnectInterval);
+                            serverLoadingSection.style.opacity = '0';
+                            setTimeout(() => {
+                                serverLoadingSection.style.display = 'none';
+                                serverConnectedSection.style.display = 'block';
+                                serverConnectedSection.style.opacity = '0';
+                                void serverConnectedSection.offsetWidth;
+                                serverConnectedSection.style.opacity = '1';
+                            }, 300);
+                        }
+                    }, 1000);
+                    
+                }, 300);
+            } else {
+                serverError.style.display = 'block';
+            }
+        });
+
+        serverReturnBtn.addEventListener('click', () => {
+            serverScreen.style.opacity = '0';
+            serverScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                serverScreen.style.display = 'none';
+                dashboardScreen.style.display = 'block';
+                
+                void dashboardScreen.offsetWidth;
+                
+                dashboardScreen.style.opacity = '1';
+                dashboardScreen.style.transform = 'scale(1)';
+                
+                startTimer();
+            }, 500);
+        });
+
+        rebootBtn.addEventListener('click', () => {
+            // Stop timers
+            clearInterval(predictionInterval);
+            clearInterval(countdownInterval);
+            
+            // Transition out dashboard
+            dashboardScreen.style.opacity = '0';
+            dashboardScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                dashboardScreen.style.display = 'none';
+                rebootScreen.style.display = 'block';
+                
+                // Reset reboot UI state
+                rebootProgress.style.width = '0%';
+                rebootCompletedMsg.style.display = 'none';
+                rebootContinueBtn.style.display = 'none';
+                rebootStatus.style.display = 'block';
+                rebootStatus.innerHTML = `Initializing reboot... <span id="reboot-timer">3600s</span> remaining`;
+                
+                void rebootScreen.offsetWidth; // Reflow
+                
+                rebootScreen.style.opacity = '1';
+                rebootScreen.style.transform = 'scale(1)';
+                
+                // Start reboot timer
+                const REBOOT_TIME = 3600; // 1 hour
+                let timeLeft = REBOOT_TIME;
+                
+                const rebootInterval = setInterval(() => {
+                    timeLeft--;
+                    const percent = ((REBOOT_TIME - timeLeft) / REBOOT_TIME) * 100;
+                    rebootProgress.style.width = `${percent}%`;
+                    
+                    const timerSpan = document.getElementById('reboot-timer');
+                    if (timerSpan) timerSpan.textContent = `${timeLeft}s`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(rebootInterval);
+                        rebootStatus.style.display = 'none';
+                        rebootCompletedMsg.style.display = 'block';
+                        rebootContinueBtn.style.display = 'block';
+                    }
+                }, 1000);
+            }, 500);
+        });
+
+        rebootContinueBtn.addEventListener('click', () => {
+            rebootScreen.style.opacity = '0';
+            rebootScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                rebootScreen.style.display = 'none';
+                dashboardScreen.style.display = 'block';
+                
+                // Clear history since system rebooted
+                history = [];
+                renderHistory();
+                
+                void dashboardScreen.offsetWidth; // Reflow
+                
+                dashboardScreen.style.opacity = '1';
+                dashboardScreen.style.transform = 'scale(1)';
+                
+                startTimer();
+            }, 500);
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            // Stop timers
+            clearInterval(countdownInterval);
+            
+            // Transition out
+            dashboardScreen.style.opacity = '0';
+            dashboardScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                dashboardScreen.style.display = 'none';
+                loginScreen.style.display = 'block';
+                loginForm.reset();
+                
+                // Reset UI state
+                currentNumberEl.style.fontSize = '';
+                currentNumberEl.style.color = '';
+                currentNumberEl.textContent = '-';
+                profitLabelEl.textContent = 'Awaiting...';
+                profitLabelEl.className = 'label-badge';
+                profitLabelEl.style.animation = 'none';
+                progressCircle.style.stroke = 'var(--primary)';
+                progressCircle.style.strokeDashoffset = '0';
+                
+                // Trigger reflow
+                void loginScreen.offsetWidth;
+                
+                loginScreen.style.opacity = '1';
+                loginScreen.style.transform = 'scale(1)';
+            }, 500);
+        });
+
+    </script>
+</body>
+</html>
